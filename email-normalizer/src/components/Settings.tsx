@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button } from "../components/ui/button"
-import { Input } from "../components/ui/input"
-import { Label } from "../components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog"
-import { Settings2 } from 'lucide-react'
+import { Button } from "./ui/button"
+import { Input } from "./ui/input"
+import { Label } from "./ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog"
+import { Settings2, Trash2 } from 'lucide-react'
+import { toast } from '../components/use-toast'
 
 type ReplacementRule = {
   from: string;
@@ -23,7 +24,11 @@ const defaultReplacements: ReplacementRule[] = [
   { from: 'ñ', to: 'n', action: 'replace' },
 ];
 
-export function SettingsDialog() {
+interface SettingsDialogProps {
+  onSave: (replacements: ReplacementRule[]) => void;
+}
+
+export function SettingsDialog({ onSave }: SettingsDialogProps) {
   const [replacements, setReplacements] = useState<ReplacementRule[]>(defaultReplacements);
   const [newFrom, setNewFrom] = useState('');
   const [newTo, setNewTo] = useState('');
@@ -49,24 +54,35 @@ export function SettingsDialog() {
     }
   };
 
+  const handleDeleteReplacement = (index: number) => {
+    const newReplacements = replacements.filter((_, i) => i !== index);
+    setReplacements(newReplacements);
+  };
+
   const handleSave = () => {
     localStorage.setItem('emailNormalizerReplacements', JSON.stringify(replacements));
+    onSave(replacements);
+    toast({
+      title: "Settings saved",
+      description: "Your email normalization settings have been updated.",
+    })
   };
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="icon" className="absolute top-4 right-4">
-          <Settings2 className="h-4 w-4" />
+        <Button variant="default" size="default" className="bg-black text-white hover:bg-gray-800">
+          <Settings2 className="h-4 w-4 mr-2" />
+          Settings
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] bg-white">
         <DialogHeader>
           <DialogTitle>Email Normalizer Settings</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           {replacements.map((rule, index) => (
-            <div key={index} className="grid grid-cols-3 items-center gap-4">
+            <div key={index} className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor={`from-${index}`} className="text-right">
                 {rule.from}
               </Label>
@@ -82,6 +98,13 @@ export function SettingsDialog() {
                   <SelectItem value="keep">Don&apos;t replace</SelectItem>
                 </SelectContent>
               </Select>
+              <Button
+                variant="destructive"
+                size="icon"
+                onClick={() => handleDeleteReplacement(index)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </div>
           ))}
           <div className="grid grid-cols-3 items-center gap-4">

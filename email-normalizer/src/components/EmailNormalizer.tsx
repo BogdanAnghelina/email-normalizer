@@ -9,6 +9,7 @@ import { Label } from "./ui/label"
 import * as XLSX from 'xlsx'
 import unidecode from 'unidecode'
 import { SettingsDialog } from './Settings'
+import { Settings2 } from 'lucide-react'
 
 type ReplacementRule = {
   from: string;
@@ -77,55 +78,61 @@ export default function EmailNormalizer() {
   }
 
   return (
-    <div className="w-full max-w-2xl bg-white shadow-xl rounded-lg p-8 relative">
-      <SettingsDialog />
-      <Tabs defaultValue="manual" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-8">
-          <TabsTrigger value="manual">Manual Input</TabsTrigger>
-          <TabsTrigger value="file">File Upload</TabsTrigger>
-        </TabsList>
-        <TabsContent value="manual">
-          <form onSubmit={handleManualSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="manual-emails">Enter emails (one per line)</Label>
+    <div className="min-h-screen bg-gray-100 p-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <SettingsDialog onSave={setReplacements} />
+        </div>
+        <div className="bg-white shadow-xl rounded-lg p-8">
+          <Tabs defaultValue="manual" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-8">
+              <TabsTrigger value="manual">Manual Input</TabsTrigger>
+              <TabsTrigger value="file">File Upload</TabsTrigger>
+            </TabsList>
+            <TabsContent value="manual">
+              <form onSubmit={handleManualSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="manual-emails">Enter emails (one per line)</Label>
+                  <Textarea
+                    id="manual-emails"
+                    value={manualEmails}
+                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setManualEmails(e.target.value)}
+                    placeholder="Enter emails here..."
+                    className="min-h-[200px]"
+                  />
+                </div>
+                <Button type="submit">Normalize Emails</Button>
+              </form>
+            </TabsContent>
+            <TabsContent value="file">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="file-upload">Upload Excel file</Label>
+                  <Input
+                    id="file-upload"
+                    type="file"
+                    onChange={handleFileUpload}
+                    accept=".xlsx,.xls"
+                  />
+                </div>
+                {file && <p className="text-sm text-gray-500">File uploaded: {file.name}</p>}
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          {normalizedEmails && (
+            <div className="mt-8 space-y-4">
+              <h2 className="text-2xl font-semibold">Normalized Emails</h2>
               <Textarea
-                id="manual-emails"
-                value={manualEmails}
-                onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setManualEmails(e.target.value)}
-                placeholder="Enter emails here..."
+                value={normalizedEmails}
+                readOnly
                 className="min-h-[200px]"
               />
+              <Button onClick={handleDownload}>Download Normalized Emails</Button>
             </div>
-            <Button type="submit">Normalize Emails</Button>
-          </form>
-        </TabsContent>
-        <TabsContent value="file">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="file-upload">Upload Excel file</Label>
-              <Input
-                id="file-upload"
-                type="file"
-                onChange={handleFileUpload}
-                accept=".xlsx,.xls"
-              />
-            </div>
-            {file && <p className="text-sm text-gray-500">File uploaded: {file.name}</p>}
-          </div>
-        </TabsContent>
-      </Tabs>
-
-      {normalizedEmails && (
-        <div className="mt-8 space-y-4">
-          <h2 className="text-2xl font-semibold">Normalized Emails</h2>
-          <Textarea
-            value={normalizedEmails}
-            readOnly
-            className="min-h-[200px]"
-          />
-          <Button onClick={handleDownload}>Download Normalized Emails</Button>
+          )}
         </div>
-      )}
+      </div>
     </div>
   )
 }
