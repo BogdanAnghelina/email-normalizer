@@ -1,11 +1,15 @@
 'use client'
 
-import React, { useState } from 'react'
-import * as ExcelJS from 'exceljs'
+import { useState, FormEvent, ChangeEvent } from 'react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
+import { Button } from "../components/ui/button"
+import { Textarea } from "../components/ui/textarea"
+import { Input } from "../components/ui/input"
+import { Label } from "../components/ui/label"
+import * as XLSX from 'xlsx'
 import unidecode from 'unidecode'
 
 export default function EmailNormalizer() {
-  const [activeTab, setActiveTab] = useState('manual')
   const [manualEmails, setManualEmails] = useState('')
   const [normalizedEmails, setNormalizedEmails] = useState('')
   const [file, setFile] = useState<File | null>(null)
@@ -17,25 +21,22 @@ export default function EmailNormalizer() {
       .join('\n')
   }
 
-  const handleManualSubmit = (e: React.FormEvent) => {
+  const handleManualSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const normalized = normalizeEmails(manualEmails)
     setNormalizedEmails(normalized)
   }
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       setFile(file)
-      const workbook = new ExcelJS.Workbook()
-      await workbook.xlsx.load(await file.arrayBuffer())
-      const worksheet = workbook.getWorksheet(1)
-      const emails: string[] = []
-      worksheet?.eachRow((row) => {
-        const email = row.getCell(1).text
-        if (email) emails.push(email)
-      })
-      const normalized = normalizeEmails(emails.join('\n'))
+      const data = await file.arrayBuffer()
+      const workbook = XLSX.read(data)
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]]
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as string[][]
+      const emails = jsonData.flat().filter(Boolean).join('\n')
+      const normalized = normalizeEmails(emails)
       setNormalizedEmails(normalized)
     }
   }
@@ -54,85 +55,51 @@ export default function EmailNormalizer() {
 
   return (
     <div className="w-full max-w-2xl bg-white shadow-xl rounded-lg p-8">
-      <div className="mb-4">
-        <div className="flex border-b">
-          <button
-            className={`py-2 px-4 ${activeTab === 'manual' ? 'border-b-2 border-blue-500' : ''}`}
-            onClick={() => setActiveTab('manual')}
-          >
-            Manual Input
-          </button>
-          <button
-            className={`py-2 px-4 ${activeTab === 'file' ? 'border-b-2 border-blue-500' : ''}`}
-            onClick={() => setActiveTab('file')}
-          >
-            File Upload
-          </button>
-        </div>
-      </div>
-
-      {activeTab === 'manual' && (
-        <form onSubmit={handleManualSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="manual-emails" className="block text-sm font-medium text-gray-700">
-              Enter emails (one per line)
-            </label>
-            <textarea
-              id="manual-emails"
-              value={manualEmails}
-              onChange={(e) => setManualEmails(e.target.value)}
-              placeholder="Enter emails here..."
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-              rows={5}
-            />
+      <Tabs defaultValue="manual" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="manual">Manual Input</TabsTrigger>
+          <TabsTrigger value="file">File Upload</TabsTrigger>
+        </TabsList>
+        <TabsContent value="manual">
+          <form onSubmit={handleManualSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="manual-emails">Enter emails (one per line)</Label>
+              <Textarea
+                id="manual-emails"
+                value={manualEmails}
+                onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setManualEmails(e.target.value)}
+                placeholder="Enter emails here..."
+                className="min-h-[200px]"
+              />
+            </div>
+            <Button type="submit">Normalize Emails</Button>
+          </form>
+        </TabsContent>
+        <TabsContent value="file">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="file-upload">Upload Excel file</Label>
+              <Input
+                id="file-upload"
+                type="file"
+                onChange={handleFileUpload}
+                accept=".xlsx,.xls"
+              />
+            </div>
+            {file && <p className="text-sm text-gray-500">File uploaded: {file.name}</p>}
           </div>
-          <button
-            type="submit"
-            className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Normalize Emails
-          </button>
-        </form>
-      )}
-
-      {activeTab === 'file' && (
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="file-upload" className="block text-sm font-medium text-gray-700">
-              Upload Excel file
-            </label>
-            <input
-              id="file-upload"
-              type="file"
-              onChange={handleFileUpload}
-              accept=".xlsx,.xls"
-              className="mt-1 block w-full text-sm text-gray-500
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-md file:border-0
-                file:text-sm file:font-semibold
-                file:bg-blue-50 file:text-blue-700
-                hover:file:bg-blue-100"
-            />
-          </div>
-          {file && <p className="text-sm text-gray-500">File uploaded: {file.name}</p>}
-        </div>
-      )}
+        </TabsContent>
+      </Tabs>
 
       {normalizedEmails && (
         <div className="mt-8 space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900">Normalized Emails</h2>
-          <textarea
+          <h2 className="text-2xl font-semibold">Normalized Emails</h2>
+          <Textarea
             value={normalizedEmails}
             readOnly
-            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-            rows={5}
+            className="min-h-[200px]"
           />
-          <button
-            onClick={handleDownload}
-            className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-          >
-            Download Normalized Emails
-          </button>
+          <Button onClick={handleDownload}>Download Normalized Emails</Button>
         </div>
       )}
     </div>
