@@ -1,23 +1,46 @@
 'use client'
 
-import { useState, FormEvent, ChangeEvent } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
-import { Button } from "../components/ui/button"
-import { Textarea } from "../components/ui/textarea"
-import { Input } from "../components/ui/input"
-import { Label } from "../components/ui/label"
+import { useState, FormEvent, ChangeEvent, useEffect } from 'react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
+import { Button } from "./ui/button"
+import { Textarea } from "./ui/textarea"
+import { Input } from "./ui/input"
+import { Label } from "./ui/label"
 import * as XLSX from 'xlsx'
 import unidecode from 'unidecode'
+import { SettingsDialog } from './Settings'
+
+type ReplacementRule = {
+  from: string;
+  to: string;
+  action: 'replace' | 'keep';
+};
 
 export default function EmailNormalizer() {
   const [manualEmails, setManualEmails] = useState('')
   const [normalizedEmails, setNormalizedEmails] = useState('')
   const [file, setFile] = useState<File | null>(null)
+  const [replacements, setReplacements] = useState<ReplacementRule[]>([])
+
+  useEffect(() => {
+    const savedReplacements = localStorage.getItem('emailNormalizerReplacements');
+    if (savedReplacements) {
+      setReplacements(JSON.parse(savedReplacements));
+    }
+  }, []);
 
   const normalizeEmails = (emails: string) => {
     return emails
       .split('\n')
-      .map(email => unidecode(email.trim()))
+      .map(email => {
+        let normalizedEmail = unidecode(email.trim());
+        replacements.forEach(rule => {
+          if (rule.action === 'replace') {
+            normalizedEmail = normalizedEmail.replace(new RegExp(rule.from, 'g'), rule.to);
+          }
+        });
+        return normalizedEmail;
+      })
       .join('\n')
   }
 
@@ -54,7 +77,8 @@ export default function EmailNormalizer() {
   }
 
   return (
-    <div className="w-full max-w-2xl bg-white shadow-xl rounded-lg p-8">
+    <div className="w-full max-w-2xl bg-white shadow-xl rounded-lg p-8 relative">
+      <SettingsDialog />
       <Tabs defaultValue="manual" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-8">
           <TabsTrigger value="manual">Manual Input</TabsTrigger>
