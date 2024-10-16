@@ -7,7 +7,7 @@ import { Label } from "./ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog"
 import { Settings2, Trash2 } from 'lucide-react'
-import { toast } from '../components/use-toast'
+import { useToast } from '../components/use-toast'
 
 type ReplacementRule = {
   from: string;
@@ -32,6 +32,7 @@ export function SettingsDialog({ onSave }: SettingsDialogProps) {
   const [replacements, setReplacements] = useState<ReplacementRule[]>(defaultReplacements);
   const [newFrom, setNewFrom] = useState('');
   const [newTo, setNewTo] = useState('');
+  const { showToast } = useToast();
 
   useEffect(() => {
     const savedReplacements = localStorage.getItem('emailNormalizerReplacements');
@@ -62,10 +63,10 @@ export function SettingsDialog({ onSave }: SettingsDialogProps) {
   const handleSave = () => {
     localStorage.setItem('emailNormalizerReplacements', JSON.stringify(replacements));
     onSave(replacements);
-    toast({
+    showToast({
       title: "Settings saved",
       description: "Your email normalization settings have been updated.",
-    })
+    });
   };
 
   return (
