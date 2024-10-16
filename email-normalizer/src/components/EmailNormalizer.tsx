@@ -56,7 +56,7 @@ export default function EmailNormalizer() {
   return (
     <div className="w-full max-w-2xl bg-white shadow-xl rounded-lg p-8">
       <Tabs defaultValue="manual" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-2 mb-8">
           <TabsTrigger value="manual">Manual Input</TabsTrigger>
           <TabsTrigger value="file">File Upload</TabsTrigger>
         </TabsList>
