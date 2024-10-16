@@ -78,8 +78,8 @@ export function SettingsDialog() {
                   <SelectValue placeholder="Select action" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="replace">Replace with '{rule.to}'</SelectItem>
-                  <SelectItem value="keep">Don't replace</SelectItem>
+                  <SelectItem value="replace">Replace with &apos;{rule.to}&apos;</SelectItem>
+                  <SelectItem value="keep">Don&apos;t replace</SelectItem>
                 </SelectContent>
               </Select>
             </div>
