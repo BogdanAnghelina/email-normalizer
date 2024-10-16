@@ -7,7 +7,7 @@ import { Label } from "./ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog"
 import { Settings2, Trash2 } from 'lucide-react'
-import { useToast } from '../components/use-toast'
+import { useToast } from './use-toast'
 
 type ReplacementRule = {
   from: string;
@@ -77,21 +77,21 @@ export function SettingsDialog({ onSave }: SettingsDialogProps) {
           Settings
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] bg-white">
+      <DialogContent className="sm:max-w-[550px] bg-white">
         <DialogHeader>
-          <DialogTitle>Email Normalizer Settings</DialogTitle>
+          <DialogTitle className="text-2xl font-bold">Email Normalizer Settings</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
+        <div className="grid gap-6 py-4">
           {replacements.map((rule, index) => (
-            <div key={index} className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor={`from-${index}`} className="text-right">
+            <div key={index} className="grid grid-cols-[1fr,2fr,auto] items-center gap-4">
+              <Label htmlFor={`from-${index}`} className="text-right font-medium">
                 {rule.from}
               </Label>
               <Select
                 value={rule.action}
                 onValueChange={(value: 'replace' | 'keep') => handleActionChange(index, value)}
               >
-                <SelectTrigger id={`to-${index}`}>
+                <SelectTrigger id={`to-${index}`} className="w-full">
                   <SelectValue placeholder="Select action" />
                 </SelectTrigger>
                 <SelectContent>
@@ -108,25 +108,23 @@ export function SettingsDialog({ onSave }: SettingsDialogProps) {
               </Button>
             </div>
           ))}
-          <div className="grid grid-cols-3 items-center gap-4">
+          <div className="grid grid-cols-[1fr,1fr,auto] items-center gap-4">
             <Input
               id="new-from"
               value={newFrom}
               onChange={(e) => setNewFrom(e.target.value)}
               placeholder="New character"
-              className="col-span-1"
             />
             <Input
               id="new-to"
               value={newTo}
               onChange={(e) => setNewTo(e.target.value)}
               placeholder="Replace with"
-              className="col-span-1"
             />
             <Button onClick={handleAddReplacement}>Add</Button>
           </div>
         </div>
-        <Button onClick={handleSave}>Save Settings</Button>
+        <Button onClick={handleSave} className="w-full mt-6">Save Settings</Button>
       </DialogContent>
     </Dialog>
   );

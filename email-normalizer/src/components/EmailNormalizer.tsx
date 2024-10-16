@@ -80,7 +80,7 @@ export default function EmailNormalizer() {
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
+        <div className="mb-8 flex justify-end">
           <SettingsDialog onSave={setReplacements} />
         </div>
         <div className="bg-white shadow-xl rounded-lg p-8">

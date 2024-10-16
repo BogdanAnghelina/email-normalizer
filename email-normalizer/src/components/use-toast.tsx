@@ -46,7 +46,7 @@ export function useToast() {
 
 function Toast({ title, description }: ToastProps) {
   return (
-    <div className="fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-md shadow-lg">
+    <div className="fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-md shadow-lg z-50">
       <h3 className="font-bold">{title}</h3>
       <p>{description}</p>
     </div>
